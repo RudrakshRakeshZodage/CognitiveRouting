@@ -1,4 +1,4 @@
-# 🚀 Grid07: Cognitive Routing & Autonomous RAG
+# 🚀 Cognitive Routing & RAG
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
 [![LangChain](https://img.shields.io/badge/Orchestration-LangChain-green.svg)](https://langchain.com/)
@@ -78,7 +78,8 @@ The system utilizes **System Instruction Precedence** and **Adversarial Awarenes
 
 1. **Clone & Install**:
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/RudrakshRakeshZodage/CognitiveRouting.git
+   cd CognitiveRouting
    pip install -r requirements.txt
    ```
 
