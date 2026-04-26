@@ -93,7 +93,11 @@ def draft_post(state: GraphState):
     }
 
 def critique_post(state: GraphState):
-    """Node 4: Critique Post. Self-correction for maximum persona impact."""
+    """
+    [ADVANCED FEATURE]: Node 4: Critique Post. 
+    This adds a self-correction layer where the bot reviews its own draft 
+    to remove 'AI-isms' and ensure the tone is raw and persona-aligned.
+    """
     llm = ChatOpenAI(model="gpt-4o", temperature=0.5)
     
     prompt = f"""
@@ -115,7 +119,11 @@ def critique_post(state: GraphState):
     return {"critique": response.content}
 
 def should_continue(state: GraphState):
-    """Conditional edge to decide if we need another draft."""
+    """
+    [ADVANCED FEATURE]: Conditional Edge.
+    Decides whether to finalize the post or send it back for another 
+    iteration based on the critique results.
+    """
     if "APPROVED" in state["critique"] or state["iterations"] >= 2:
         return "end"
     return "rewrite"

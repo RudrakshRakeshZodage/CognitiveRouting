@@ -42,10 +42,8 @@ class PersonaRouter:
 
     def route_post_to_bots(self, post_content: str, threshold: float = 0.85) -> List[str]:
         """
-        Queries the vector store and returns bots with cosine similarity > threshold.
-        Note: Chroma's default distance metric is l2, but we can interpret it or use 
-        similarity search with score. Chroma similarity search with score returns distance.
-        For cosine similarity, we expect score closer to 1 to be better.
+        [CORE LOGIC]: Queries the vector store and returns bots with cosine similarity > threshold.
+        This ensures that only bots with a persona relevant to the post topic are selected.
         """
         # relevance_score_fn in LangChain Chroma often returns 1 - distance
         results = self.vector_store.similarity_search_with_relevance_scores(post_content, k=3)
