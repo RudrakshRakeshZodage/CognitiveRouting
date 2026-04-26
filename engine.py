@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.tools import tool
 from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.memory import MemorySaver
 from pydantic import BaseModel, Field
 
 load_dotenv()
@@ -34,6 +35,7 @@ class GraphState(TypedDict):
     post_content: str
     critique: str
     iterations: int
+    approved: bool
 
 class PostOutput(BaseModel):
     bot_id: str = Field(description="The ID of the bot generating the post")
@@ -121,12 +123,20 @@ def critique_post(state: GraphState):
 def should_continue(state: GraphState):
     """
     [ADVANCED FEATURE]: Conditional Edge.
-    Decides whether to finalize the post or send it back for another 
-    iteration based on the critique results.
+    If approved by critique, move to human approval.
     """
     if "APPROVED" in state["critique"] or state["iterations"] >= 2:
-        return "end"
+        return "human_approval"
     return "rewrite"
+
+def human_approval(state: GraphState):
+    """
+    [ADVANCED FEATURE]: Human-in-the-Loop Node.
+    In a real app, this would be a UI button. Here, it's a simulated 
+    checkpoint where the human can provide an 'OK' signal.
+    """
+    # This node is often just a placeholder for an 'interrupt' in LangGraph
+    return {"approved": True}
 
 # Build Graph
 workflow = StateGraph(GraphState)
@@ -135,6 +145,7 @@ workflow.add_node("decide_search", decide_search)
 workflow.add_node("web_search", web_search)
 workflow.add_node("draft_post", draft_post)
 workflow.add_node("critique_post", critique_post)
+workflow.add_node("human_approval", human_approval)
 
 workflow.set_entry_point("decide_search")
 workflow.add_edge("decide_search", "web_search")
@@ -146,13 +157,19 @@ workflow.add_conditional_edges(
     should_continue,
     {
         "rewrite": "draft_post",
-        "end": END
+        "human_approval": "human_approval"
     }
 )
 
-app = workflow.compile()
+workflow.add_edge("human_approval", END)
+
+# Memory for HITL
+memory = MemorySaver()
+app = workflow.compile(checkpointer=memory, interrupt_before=["human_approval"])
 
 def run_content_engine(bot_id: str, persona: str):
+    config = {"configurable": {"thread_id": "demo_thread"}}
+    
     initial_state = {
         "bot_id": bot_id,
         "persona": persona,
@@ -161,15 +178,26 @@ def run_content_engine(bot_id: str, persona: str):
         "search_results": "",
         "post_content": "",
         "critique": "",
-        "iterations": 0
+        "iterations": 0,
+        "approved": False
     }
-    final_output = app.invoke(initial_state)
+    
+    # Run until the interrupt (HITL)
+    print("--- [HITL] Running graph until human approval interrupt... ---")
+    for event in app.stream(initial_state, config):
+        print(f"Node processed: {list(event.keys())[0]}")
+    
+    # Simulate human approval
+    print("--- [HITL] Human Moderator: Post looks good. Resuming... ---")
+    final_output = app.invoke(None, config) # Passing None resumes from checkpoint
+    
     return {
         "bot_id": final_output["bot_id"],
         "topic": final_output["topic"],
         "post_content": final_output["post_content"],
         "critique": final_output.get("critique", "N/A"),
-        "iterations": final_output.get("iterations", 0)
+        "iterations": final_output.get("iterations", 0),
+        "hitl_status": "Approved by Moderator"
     }
 
 if __name__ == "__main__":

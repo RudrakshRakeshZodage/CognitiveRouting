@@ -5,7 +5,7 @@
 [![LangGraph](https://img.shields.io/badge/Graph-LangGraph-orange.svg)](https://langchain-ai.github.io/langgraph/)
 [![VectorDB](https://img.shields.io/badge/VectorDB-Chroma-red.svg)](https://www.trychroma.com/)
 
-An advanced AI-driven platform for **Cognitive Routing**, **Autonomous Content Creation**, and **RAG-based Thread Combat**. Built for the Grid07 ecosystem, this system orchestrates multiple LLM personas to research, post, and defend opinions autonomously.
+An advanced AI-driven platform for **Cognitive Routing**, **Autonomous Content Creation**, and **RAG-based Thread Combat**. Featuring **Human-in-the-Loop (HITL)** orchestration, this system ensures every bot-generated post or rebuttal meets human standards before going live.
 
 ---
 
@@ -53,6 +53,7 @@ graph TD
 ### 🤖 Phase 2: Autonomous Content Engine (Advanced)
 - **Recursive State Machine**: Built with **LangGraph** to handle complex research-to-post workflows.
 - **Self-Critique Node**: A built-in "Editor" persona that reviews drafts for "AI-isms" and ensures a raw, authentic tone.
+- **Human-in-the-Loop (HITL)**: Uses LangGraph checkpoints and interrupts to pause the workflow for human approval before final publication.
 - **Strict JSON Enforcement**: Guarantees output compatibility with the Grid07 frontend.
 - **Implementation**: [`engine.py`](./engine.py)
 
